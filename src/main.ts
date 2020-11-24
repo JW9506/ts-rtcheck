@@ -15,7 +15,7 @@ type MapPrimitive<P extends Primitives> = P extends 'bigint'
   : P extends 'number'
   ? number
   : P extends 'object'
-  ? object
+  ? Record<string, unknown>
   : P extends 'string'
   ? string
   : P extends 'function'
@@ -32,12 +32,24 @@ type Keys<T> = T extends undefined
       [K in keyof T]: Primitives
     }
 
+type FilterObject<T> = {
+  [K in keyof T]: T[K] extends AnyFunction
+    ? T[K]
+    : T extends Record<string, any>
+    ? Partial<T[K]>
+    : T[K]
+}
+
 function isType<U = undefined, T extends Keys<U> = Keys<U>>(
   obj: unknown,
   shape: T
-): obj is U extends undefined ? Assert<T> : U {
+): obj is U extends undefined ? Assert<T> : FilterObject<U> {
   for (const key in shape) {
-    if (obj == null || typeof (obj as any)[key] !== shape[key]) {
+    if (
+      obj == null ||
+      (obj as any)[key] == null ||
+      typeof (obj as any)[key] !== shape[key]
+    ) {
       return false
     }
   }
@@ -61,12 +73,14 @@ interface Book {
   title: string
   year: number
   AFun: AnyFunction
+  Anull: { secret: string }
   author?: string
 }
 
 const unknownData: unknown = {
   title: 'Lovely',
   year: 2020,
+  Anull: { secret: '456' },
   AFun() {
     console.log('AFun!')
   },
@@ -77,11 +91,13 @@ if (
     title: 'string',
     year: 'number',
     AFun: 'function',
+    Anull: 'object',
   })
 ) {
   console.log(unknownData.title)
   console.log(unknownData.year)
   console.log(unknownData.author)
+  console.log(unknownData.Anull.secret?.charAt(2))
   unknownData.AFun()
 }
 
@@ -97,4 +113,11 @@ if (
 ) {
   console.log(unknownObj.c.d + 123)
   console.log(unknownObj.c.e.charAt(1))
+}
+
+console.log('Separator --------')
+if (isType(unknownObj, { a: 'string', b: 'number', c: 'object' })) {
+  if (isType(unknownObj.c, { d: 'number' })) {
+    console.log(unknownObj.c.d * 10)
+  }
 }
