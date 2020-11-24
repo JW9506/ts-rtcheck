@@ -14,11 +14,14 @@ type MapPrimitive<P extends Primitives> = P extends 'bigint'
   ? string
   : undefined
 
-type H<S extends ShapeType> = {
+type Assert<S extends ShapeType> = {
   [W in keyof S]: MapPrimitive<S[W]>
 }
 
-function AssertType<T extends ShapeType>(obj: unknown, shape: T): obj is H<T> {
+function AssertType<T extends ShapeType>(
+  obj: unknown,
+  shape: T
+): obj is Assert<T> {
   for (const key in shape) {
     if (obj == null || typeof (obj as any)[key] !== shape[key]) {
       return false
@@ -38,6 +41,25 @@ const unknownObj: unknown = {
     d: 9,
     e: '10',
   },
+}
+
+interface Book {
+  title: string
+  year: number
+}
+
+const unknownData: unknown = {
+  title: 'Lovely',
+  year: 2020,
+}
+
+if (
+  AssertType(unknownData, {
+    title: 'string',
+    year: 'number',
+  })
+) {
+  unknownData.title
 }
 
 if (AssertType(unknownObj, { a: 'string', b: 'number' })) {
