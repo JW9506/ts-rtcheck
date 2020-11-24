@@ -1,6 +1,12 @@
-type Primitives = 'boolean' | 'number' | 'object' | 'string' | 'undefined'
+type Primitives =
+  | 'boolean'
+  | 'number'
+  | 'object'
+  | 'string'
+  | 'undefined'
+  | 'function'
 
-type ShapeType = Record<string, Primitives>
+type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R
 
 type MapPrimitive<P extends Primitives> = P extends 'bigint'
   ? bigint
@@ -12,16 +18,24 @@ type MapPrimitive<P extends Primitives> = P extends 'bigint'
   ? object
   : P extends 'string'
   ? string
+  : P extends 'function'
+  ? AnyFunction
   : undefined
 
-type Assert<S extends ShapeType> = {
+type Assert<S extends Record<string, Primitives>> = {
   [W in keyof S]: MapPrimitive<S[W]>
 }
 
-function AssertType<T extends ShapeType>(
+type Keys<T> = T extends undefined
+  ? Record<string, Primitives>
+  : {
+      [K in keyof T]: Primitives
+    }
+
+function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
   obj: unknown,
   shape: T
-): obj is Assert<T> {
+): obj is U extends undefined ? Assert<T> : U {
   for (const key in shape) {
     if (obj == null || typeof (obj as any)[key] !== shape[key]) {
       return false
@@ -46,20 +60,29 @@ const unknownObj: unknown = {
 interface Book {
   title: string
   year: number
+  AFun: AnyFunction
+  author?: string
 }
 
 const unknownData: unknown = {
   title: 'Lovely',
   year: 2020,
+  AFun() {
+    console.log('AFun!')
+  },
 }
 
 if (
-  AssertType(unknownData, {
+  AssertType<Book>(unknownData, {
     title: 'string',
     year: 'number',
+    AFun: 'function',
   })
 ) {
-  unknownData.title
+  console.log(unknownData.title)
+  console.log(unknownData.year)
+  console.log(unknownData.author)
+  unknownData.AFun()
 }
 
 if (AssertType(unknownObj, { a: 'string', b: 'number' })) {
