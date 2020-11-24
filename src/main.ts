@@ -32,7 +32,7 @@ type Keys<T> = T extends undefined
       [K in keyof T]: Primitives
     }
 
-function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
+function isType<U = undefined, T extends Keys<U> = Keys<U>>(
   obj: unknown,
   shape: T
 ): obj is U extends undefined ? Assert<T> : U {
@@ -44,7 +44,7 @@ function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
   return true
 }
 
-function AssertObject(obj: unknown): obj is Record<string, unknown> {
+function isObject(obj: unknown): obj is Record<string, unknown> {
   return obj != null && typeof obj === 'object'
 }
 
@@ -73,7 +73,7 @@ const unknownData: unknown = {
 }
 
 if (
-  AssertType<Book>(unknownData, {
+  isType<Book>(unknownData, {
     title: 'string',
     year: 'number',
     AFun: 'function',
@@ -85,15 +85,15 @@ if (
   unknownData.AFun()
 }
 
-if (AssertType(unknownObj, { a: 'string', b: 'number' })) {
+if (isType(unknownObj, { a: 'string', b: 'number' })) {
   console.log(unknownObj.a.charAt(1))
   console.log(unknownObj.b + 1)
 }
 
 if (
-  AssertObject(unknownObj) &&
-  AssertObject(unknownObj.c) &&
-  AssertType(unknownObj.c, { d: 'number', e: 'string' })
+  isObject(unknownObj) &&
+  isObject(unknownObj.c) &&
+  isType(unknownObj.c, { d: 'number', e: 'string' })
 ) {
   console.log(unknownObj.c.d + 123)
   console.log(unknownObj.c.e.charAt(1))
