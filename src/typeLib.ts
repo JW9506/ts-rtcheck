@@ -40,6 +40,9 @@ export type FilterObject<T> = {
     : T[K]
 }
 
+export type isSameType<T, U> = (T extends U ? true : false) &
+  (U extends T ? true : false)
+
 export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
   obj: unknown,
   shape: T
