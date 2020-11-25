@@ -56,8 +56,31 @@ function isType<U = undefined, T extends Keys<U> = Keys<U>>(
   return true
 }
 
+function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
+  obj: unknown,
+  shape: T,
+  msg?: string
+): asserts obj is U extends undefined ? Assert<T> : FilterObject<U> {
+  for (const key in shape) {
+    if (
+      obj == null ||
+      (obj as any)[key] == null ||
+      typeof (obj as any)[key] !== shape[key]
+    ) {
+      throw new TypeError(msg)
+    }
+  }
+}
+
 function isObject(obj: unknown): obj is Record<string, unknown> {
   return obj != null && typeof obj === 'object'
+}
+
+function AssertObject(
+  obj: unknown,
+  msg?: string
+): asserts obj is Record<string, unknown> {
+  if (!(obj != null && typeof obj === 'object')) throw new TypeError(msg)
 }
 
 const unknownObj: unknown = {
@@ -121,3 +144,24 @@ if (isType(unknownObj, { a: 'string', b: 'number', c: 'object' })) {
     console.log(unknownObj.c.d * 10)
   }
 }
+
+AssertType(unknownObj, { a: 'string' })
+
+console.log(unknownObj.a)
+
+interface Person {
+  name: string
+  age: number
+}
+
+const unknownPerson: unknown = {
+  name: 'jacky',
+  age: 13,
+}
+
+AssertType<Person>(unknownPerson, {
+  name: 'string',
+  age: 'number',
+})
+
+console.log(`${unknownPerson.name} ${unknownPerson.age}`)
