@@ -1,4 +1,11 @@
-import { AnyFunction, AssertType, isObject, isType } from './typeLib'
+import {
+  AnyFunction,
+  AssertExist,
+  AssertType,
+  isExist,
+  isObject,
+  isType,
+} from './typeLib'
 
 const unknownObj: unknown = {
   a: '123',
@@ -69,16 +76,61 @@ console.log(unknownObj.a)
 interface Person {
   name: string
   age: number
+  phone: { brand: string }
 }
 
 const unknownPerson: unknown = {
   name: 'jacky',
   age: 13,
+  phone: { brand: 'apple' },
 }
 
 AssertType<Person>(unknownPerson, {
   name: 'string',
   age: 'number',
+  phone: 'object',
 })
 
 console.log(`${unknownPerson.name} ${unknownPerson.age}`)
+
+const unknownPplList: unknown = [
+  {
+    name: 'lily',
+    age: 15,
+    phone: { brand: 'apple' },
+  },
+  {
+    name: 'booboo',
+    age: 16,
+    phone: { brand: 'samsung' },
+  },
+]
+
+if (
+  isType<Array<Person>>(unknownPplList, [
+    {
+      name: 'string',
+      age: 'number',
+      phone: 'object',
+    },
+  ])
+) {
+  unknownPplList.forEach((obj) => {
+    AssertExist(obj.phone.brand)
+    console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`)
+  })
+}
+
+AssertType<Array<Person>>(unknownPplList, [
+  {
+    name: 'string',
+    age: 'number',
+    phone: 'object',
+  },
+])
+
+unknownPplList.forEach((obj) => {
+  if (isExist(obj.phone.brand)) {
+    console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`)
+  }
+})
