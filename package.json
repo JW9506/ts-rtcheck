@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "'JW9506' <'cf.dota@gmail.com'>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/assert": "^1.5.2"
+  }
 }
