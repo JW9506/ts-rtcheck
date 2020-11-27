@@ -4,8 +4,10 @@ import {
   AssertType,
   isExist,
   isObject,
+  isSameType,
   isType,
 } from './typeLib'
+import assert from 'assert'
 
 const unknownObj: unknown = {
   a: '123',
@@ -85,6 +87,15 @@ const unknownPerson: unknown = {
   phone: { brand: 'apple' },
 }
 
+assert.throws(() => {
+  AssertType(unknownPerson, {
+    name: 'number',
+    age: 'number',
+    phone: 'number',
+  })
+  unknownPerson.phone + 1
+})
+
 AssertType<Person>(unknownPerson, {
   name: 'string',
   age: 'number',
@@ -120,6 +131,16 @@ if (
     console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`)
   })
 }
+
+assert.throws(() =>
+  AssertType<Array<Person>>(unknownPplList, [
+    {
+      name: 'string',
+      age: 'number',
+      phone: 'number',
+    },
+  ])
+)
 
 AssertType<Array<Person>>(unknownPplList, [
   {
