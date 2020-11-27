@@ -155,3 +155,13 @@ unknownPplList.forEach((obj) => {
     console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`)
   }
 })
+
+assert.throws(() => {
+  AssertType<Array<unknown>>(unknownPplList, [
+    {
+      name: 'string',
+      age: 'number',
+      phone: 'number'
+    },
+  ])
+})

@@ -38,6 +38,8 @@ export type Assert<S> = S extends Array<infer R>
 
 export type Keys<T> = T extends undefined
   ? Record<string, Primitives>
+  : T extends Array<unknown>
+  ? Array<Record<string, Primitives>>
   : T extends Array<infer R>
   ? Array<
       {
