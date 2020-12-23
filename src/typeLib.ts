@@ -29,6 +29,10 @@ type Inner<P> = P extends 'bigint'
     : never;
 
 type Unwrap<T> = T extends any[] ? T[0] : T;
+type PrimitivesTuple =
+    | [Primitives, Primitives]
+    | [Primitives, Primitives, Primitives]
+    | [Primitives, Primitives, Primitives, Primitives];
 
 export type MapPrimitive<P extends any[] | string, O = never> = {
     0: MapPrimitive<ShiftArr<P>, O | Inner<Unwrap<P>>>;
@@ -37,31 +41,31 @@ export type MapPrimitive<P extends any[] | string, O = never> = {
 }[P extends [] ? 1 : P extends string ? 2 : 0];
 
 export type Assert<S> = S extends Array<infer R>
-    ? R extends Record<string, Primitives | [Primitives, Primitives]>
+    ? R extends Record<string, Primitives | PrimitivesTuple>
         ? Array<
               {
                   [W in keyof R]: MapPrimitive<R[W]>;
               }
           >
         : never
-    : S extends Record<string, Primitives | [Primitives, Primitives]>
+    : S extends Record<string, Primitives | PrimitivesTuple>
     ? {
           [W in keyof S]: MapPrimitive<S[W]>;
       }
     : never;
 
 export type Keys<T> = T extends undefined
-    ? Record<string, Primitives | [Primitives, Primitives]>
+    ? Record<string, Primitives | PrimitivesTuple>
     : T extends Array<unknown>
-    ? Array<Record<string, Primitives | [Primitives, Primitives]>>
+    ? Array<Record<string, Primitives | PrimitivesTuple>>
     : T extends Array<infer R>
     ? Array<
           {
-              [K in keyof R]: Primitives | [Primitives, Primitives];
+              [K in keyof R]: Primitives | PrimitivesTuple;
           }
       >
     : {
-          [K in keyof T]: Primitives | [Primitives, Primitives];
+          [K in keyof T]: Primitives | PrimitivesTuple;
       };
 
 export type FilterObject<T> = T extends Array<infer R>
