@@ -9,6 +9,14 @@ module.exports = {
         tabWidth: 4,
       },
     },
+    {
+      files: '*.md',
+      options: {
+        tabWidth: 4,
+        semi: true,
+        printWidth: 120,
+      },
+    },
   ],
   trailingComma: 'es5',
   arrowParens: 'always',
