@@ -126,95 +126,58 @@ export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
 
 export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     obj: unknown,
-    shape: T,
+    typeShape: T,
     msg?: string
 ): asserts obj is U extends undefined
     ? Assert<T>
     : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
-    if (Array.isArray(obj) !== Array.isArray(shape))
+    if (Array.isArray(obj) !== Array.isArray(typeShape))
         throw new TypeError(
             'Passed in value is expected to be of type "Array"'
         );
-    shape = Array.isArray(shape) ? shape[0] : shape;
+    const shape = (Array.isArray(typeShape)
+        ? typeShape[0]
+        : typeShape) as Record<string, Primitives | Primitives[]>;
+
+    const errMsg = (key: any, shape: any, obj: any, msg?: string) => {
+        return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
+            Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
+        }", got ${Object.is(obj[key], null) ? null : typeof obj[key]}`;
+    };
+
+    const checkOneObj = (obj: any) => {
+        for (const key in shape) {
+            if (Array.isArray(shape[key])) {
+                const flag = (shape[key] as Primitives[]).some((type) => {
+                    if (type === 'object' && obj[key] === null) {
+                        return false;
+                    }
+                    return obj != null && typeof obj[key] === type;
+                });
+                if (!flag) {
+                    throw new TypeError(errMsg(key, shape, obj, msg));
+                }
+            } else {
+                if (
+                    (shape[key] === 'object' && obj[key] === null) ||
+                    obj == null ||
+                    typeof obj[key] !== shape[key]
+                ) {
+                    throw new TypeError(errMsg(key, shape, obj, msg));
+                }
+            }
+        }
+    };
+
     if (Array.isArray(obj)) {
         const _obj = obj;
         for (obj of _obj) {
-            for (const key in shape) {
-                if (!Array.isArray(shape[key])) {
-                    if (
-                        obj == null ||
-                        (obj as any)[key] == null ||
-                        typeof (obj as any)[key] !== shape[key]
-                    ) {
-                        throw new TypeError(
-                            `${
-                                msg ? msg + ', ' : ''
-                            }${key} is expected to be of type "${
-                                shape[key]
-                            }", got ${typeof (obj as any)[key]}`
-                        );
-                    }
-                } else {
-                    const flag = (shape[key] as any[]).some((_key) => {
-                        return (
-                            obj != null &&
-                            (obj as any)[key] != null &&
-                            typeof (obj as any)[key] === _key
-                        );
-                    });
-                    if (!flag) {
-                        throw new TypeError(
-                            `${
-                                msg ? msg + ', ' : ''
-                            }${key} is expected to be of type "${(shape[
-                                key
-                            ] as any[]).join(
-                                ' | '
-                            )}", got ${typeof (obj as any)[key]}`
-                        );
-                    }
-                }
-            }
+            checkOneObj(obj);
         }
     } else {
-        for (const key in shape) {
-            if (!Array.isArray(shape[key])) {
-                if (
-                    obj == null ||
-                    (obj as any)[key] == null ||
-                    typeof (obj as any)[key] !== shape[key]
-                ) {
-                    throw new TypeError(
-                        `${
-                            msg ? msg + ', ' : ''
-                        }${key} is expected to be of type "${
-                            shape[key]
-                        }", got ${typeof (obj as any)[key]}`
-                    );
-                }
-            } else {
-                const flag = (shape[key] as any[]).some((_key) => {
-                    return (
-                        obj != null &&
-                        (obj as any)[key] != null &&
-                        typeof (obj as any)[key] === _key
-                    );
-                });
-                if (!flag) {
-                    throw new TypeError(
-                        `${
-                            msg ? msg + ', ' : ''
-                        }${key} is expected to be of type "${(shape[
-                            key
-                        ] as any[]).join(' | ')}", got ${typeof (obj as any)[
-                            key
-                        ]}`
-                    );
-                }
-            }
-        }
+        checkOneObj(obj);
     }
 }
 

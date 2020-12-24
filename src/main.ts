@@ -80,13 +80,12 @@ interface Person {
     phone: { brand: string };
 }
 
-const unknownPerson: unknown = {
-    name: 'jacky',
-    age: 13,
-    phone: { brand: 'apple' },
-};
-
 assert.throws(() => {
+    const unknownPerson: unknown = {
+        name: 'jacky',
+        age: 13,
+        phone: { brand: 'apple' },
+    };
     AssertType(unknownPerson, {
         name: 'number',
         age: 'number',
@@ -95,72 +94,150 @@ assert.throws(() => {
     unknownPerson.phone + 1;
 });
 
-AssertType<Person>(unknownPerson, {
-    name: 'string',
-    age: 'number',
-    phone: 'object',
+assert.throws(() => {
+    const unknownPerson: unknown = {
+        name: 'jacky',
+        age: 13,
+        phone: { brand: 'apple' },
+    };
+    AssertType(unknownPerson, {
+        name: 'string',
+        age: 'number',
+        phone: ['number', 'string'],
+    });
+    unknownPerson.phone;
 });
 
-console.log(`${unknownPerson.name} ${unknownPerson.age}`);
-
-const unknownPplList: unknown = [
-    {
-        name: 'lily',
-        age: 15,
-        phone: { brand: 'apple' },
-    },
-    {
-        name: 'booboo',
-        age: 16,
-        phone: { brand: 'samsung' },
-    },
-];
-
-if (
-    isType<Array<Person>>(unknownPplList, [
+assert.throws(() => {
+    const unknownPplList: unknown = [
         {
-            name: 'string',
-            age: 'number',
-            phone: 'object',
+            name: 'lily',
+            age: 15,
+            phone: { brand: 'apple' },
         },
-    ])
-) {
-    unknownPplList.forEach((obj) => {
-        AssertExist(obj.phone.brand);
-        console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`);
-    });
-}
-
-assert.throws(() =>
+        {
+            name: 'booboo',
+            age: 16,
+            phone: { brand: 'samsung' },
+        },
+    ];
     AssertType<Array<Person>>(unknownPplList, [
         {
             name: 'string',
             age: 'number',
             phone: 'number',
         },
-    ])
-);
-
-AssertType<Array<Person>>(unknownPplList, [
-    {
-        name: 'string',
-        age: 'number',
-        phone: 'object',
-    },
-]);
-
-unknownPplList.forEach((obj) => {
-    if (isExist(obj.phone.brand)) {
-        console.log(`${obj.name}, ${obj.age} ${obj.phone.brand}`);
-    }
+    ]);
 });
 
+(() => {
+    const unknownPplList: unknown = [
+        {
+            name: 'lily',
+            age: 15,
+            phone: { brand: 'apple' },
+        },
+        {
+            name: 'booboo',
+            age: 16,
+            phone: { brand: 'samsung' },
+        },
+    ];
+    AssertType<Array<Person>>(unknownPplList, [
+        {
+            name: 'string',
+            age: 'number',
+            phone: 'object',
+        },
+    ]);
+})();
+
 assert.throws(() => {
-    AssertType<Array<unknown>>(unknownPplList, [
+    const unknownPplList: unknown = [
+        {
+            name: 'lily',
+            age: 15,
+            phone: { brand: 'apple' },
+        },
+        {
+            name: 'booboo',
+            age: 16,
+            phone: { brand: 'samsung' },
+        },
+    ];
+
+    AssertType<[{ name: string; age: number; phone: number }]>(unknownPplList, [
         {
             name: 'string',
             age: 'number',
             phone: 'number',
         },
     ]);
+    unknownPplList;
+});
+
+(() => {
+    const unknownPplList: unknown = [
+        {
+            name: 'lily',
+            age: 15,
+            phone: { brand: 'apple' },
+        },
+        {
+            name: 5,
+            age: 16,
+            phone: { brand: 'samsung' },
+        },
+    ];
+
+    AssertType<
+        [{ name: number | string; age: number; phone: object | number }]
+    >(unknownPplList, [
+        {
+            name: ['string', 'number'],
+            age: 'number',
+            phone: ['number', 'object'],
+        },
+    ]);
+    unknownPplList;
+})();
+
+assert.throws(() => {
+    const unknown: unknown = {
+        a: null,
+    };
+    AssertType(unknown, {
+        a: ['number', 'string', 'undefined', 'object'],
+    });
+    console.log(unknown.a);
+});
+
+assert.throws(() => {
+    const unknown: unknown = {
+        a: null,
+    };
+    AssertType(unknown, {
+        a: 'object',
+    });
+    console.log(unknown.a);
+});
+
+(() => {
+    const unknown: unknown = {
+        a: {},
+    };
+    AssertType(unknown, {
+        a: 'object',
+    });
+    console.log('unknown.a is an object');
+})();
+
+assert.throws(() => {
+    const unknown: unknown = {
+        a: null,
+    };
+    AssertType(unknown, {
+        a: ['number', 'object'],
+    });
+    console.log(unknown.a);
 });
