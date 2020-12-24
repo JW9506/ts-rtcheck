@@ -87,60 +87,6 @@ export type isSameType<T, U> = (T extends U ? true : false) &
 
 export type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R;
 
-export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
-    obj: unknown,
-    typeShape: T
-): obj is U extends undefined
-    ? Assert<T>
-    : U extends Array<infer R>
-    ? Array<FilterObject<R>>
-    : FilterObject<U> {
-    if (Array.isArray(obj) !== Array.isArray(typeShape)) {
-        return false;
-    }
-    const shape = (Array.isArray(typeShape)
-        ? typeShape[0]
-        : typeShape) as Record<string, Primitives | Primitives[]>;
-
-    const checkOneObj = (obj: any) => {
-        for (const key in shape) {
-            if (Array.isArray(shape[key])) {
-                const flag = (shape[key] as Primitives[]).some((type) => {
-                    if (type === 'object' && obj[key] === null) {
-                        return false;
-                    }
-                    return obj != null && typeof obj[key] === type;
-                });
-                if (!flag) {
-                    throw 1;
-                }
-            } else {
-                if (
-                    (shape[key] === 'object' && obj[key] === null) ||
-                    obj == null ||
-                    typeof obj[key] !== shape[key]
-                ) {
-                    throw 1;
-                }
-            }
-        }
-    };
-
-    try {
-        if (Array.isArray(obj)) {
-            const _obj = obj;
-            for (obj of _obj) {
-                checkOneObj(obj);
-            }
-        } else {
-            checkOneObj(obj);
-        }
-    } catch {
-        return false;
-    }
-    return true;
-}
-
 export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     obj: unknown,
     typeShape: T,
@@ -196,6 +142,22 @@ export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     } else {
         checkOneObj(obj);
     }
+}
+
+export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
+    obj: unknown,
+    typeShape: T
+): obj is U extends undefined
+    ? Assert<T>
+    : U extends Array<infer R>
+    ? Array<FilterObject<R>>
+    : FilterObject<U> {
+    try {
+        AssertType(obj, typeShape as any);
+    } catch {
+        return false;
+    }
+    return true;
 }
 
 export function isObject(obj: unknown): obj is Record<string, unknown> {
