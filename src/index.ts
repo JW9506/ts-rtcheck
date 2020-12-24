@@ -89,7 +89,7 @@ export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
 function errMsg(key: any, shape: any, obj: any, msg?: string) {
     return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
         Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
-    }", got "${Object.is(obj[key], null) ? null : typeof obj[key]}"`;
+    }", got "${obj[key] === null ? null : typeof obj[key]}"`;
 }
 
 export function AssertType<

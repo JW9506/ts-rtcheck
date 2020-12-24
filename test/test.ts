@@ -1,5 +1,5 @@
 import { AnyFunction, AssertType, forceCast, isSameType, isType } from '../src';
-import assert = require('assert');
+import assert from 'assert';
 
 (() => {
     const unknownObj: unknown = {
