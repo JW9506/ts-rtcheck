@@ -1,12 +1,10 @@
-export type Primitives =
+type Primitives =
     | 'boolean'
     | 'number'
     | 'object'
     | 'string'
     | 'undefined'
     | 'function';
-
-export type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R;
 
 type ShiftArr<T extends string[] | string> = T extends [
     _: any,
@@ -34,13 +32,13 @@ type PrimitivesTuple =
     | [Primitives, Primitives, Primitives]
     | [Primitives, Primitives, Primitives, Primitives];
 
-export type MapPrimitive<P extends any[] | string, O = never> = {
+type MapPrimitive<P extends any[] | string, O = never> = {
     0: MapPrimitive<ShiftArr<P>, O | Inner<Unwrap<P>>>;
     1: O;
     2: Inner<P>;
 }[P extends [] ? 1 : P extends string ? 2 : 0];
 
-export type Assert<S> = S extends Array<infer R>
+type Assert<S> = S extends Array<infer R>
     ? R extends Record<string, Primitives | PrimitivesTuple>
         ? Array<
               {
@@ -54,7 +52,7 @@ export type Assert<S> = S extends Array<infer R>
       }
     : never;
 
-export type Keys<T> = T extends undefined
+type Keys<T> = T extends undefined
     ? Record<string, Primitives | PrimitivesTuple>
     : T extends Array<unknown>
     ? Array<Record<string, Primitives | PrimitivesTuple>>
@@ -68,7 +66,7 @@ export type Keys<T> = T extends undefined
           [K in keyof T]: Primitives | PrimitivesTuple;
       };
 
-export type FilterObject<T> = T extends Array<infer R>
+type FilterObject<T> = T extends Array<infer R>
     ? {
           [K in keyof R]: R[K] extends AnyFunction
               ? R[K]
@@ -87,39 +85,58 @@ export type FilterObject<T> = T extends Array<infer R>
 export type isSameType<T, U> = (T extends U ? true : false) &
     (U extends T ? true : false);
 
+export type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R;
+
 export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
     obj: unknown,
-    shape: T
+    typeShape: T
 ): obj is U extends undefined
     ? Assert<T>
     : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
-    if (Array.isArray(obj) !== Array.isArray(shape)) return false;
-    shape = Array.isArray(shape) ? shape[0] : shape;
-    if (Array.isArray(obj)) {
-        const _obj = obj;
-        for (obj of _obj) {
-            for (const key in shape) {
+    if (Array.isArray(obj) !== Array.isArray(typeShape)) {
+        return false;
+    }
+    const shape = (Array.isArray(typeShape)
+        ? typeShape[0]
+        : typeShape) as Record<string, Primitives | Primitives[]>;
+
+    const checkOneObj = (obj: any) => {
+        for (const key in shape) {
+            if (Array.isArray(shape[key])) {
+                const flag = (shape[key] as Primitives[]).some((type) => {
+                    if (type === 'object' && obj[key] === null) {
+                        return false;
+                    }
+                    return obj != null && typeof obj[key] === type;
+                });
+                if (!flag) {
+                    throw 1;
+                }
+            } else {
                 if (
+                    (shape[key] === 'object' && obj[key] === null) ||
                     obj == null ||
-                    (obj as any)[key] == null ||
-                    typeof (obj as any)[key] !== shape[key]
+                    typeof obj[key] !== shape[key]
                 ) {
-                    return false;
+                    throw 1;
                 }
             }
         }
-    } else {
-        for (const key in shape) {
-            if (
-                obj == null ||
-                (obj as any)[key] == null ||
-                typeof (obj as any)[key] !== shape[key]
-            ) {
-                return false;
+    };
+
+    try {
+        if (Array.isArray(obj)) {
+            const _obj = obj;
+            for (obj of _obj) {
+                checkOneObj(obj);
             }
+        } else {
+            checkOneObj(obj);
         }
+    } catch {
+        return false;
     }
     return true;
 }
@@ -144,7 +161,7 @@ export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     const errMsg = (key: any, shape: any, obj: any, msg?: string) => {
         return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
             Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
-        }", got ${Object.is(obj[key], null) ? null : typeof obj[key]}`;
+        }", got "${Object.is(obj[key], null) ? null : typeof obj[key]}"`;
     };
 
     const checkOneObj = (obj: any) => {
@@ -189,14 +206,20 @@ export function AssertObject(
     obj: unknown,
     msg?: string
 ): asserts obj is Record<string, unknown> {
-    if (!(obj != null && typeof obj === 'object')) throw new TypeError(msg);
+    if (!(obj != null && typeof obj === 'object'))
+        throw new TypeError(
+            `${msg ? msg + ', ' : ''}Input is expected to be an object, got "${
+                obj === null ? null : typeof obj
+            }"`
+        );
 }
 
 export function AssertExist<T extends any>(
     obj: T,
     msg?: string
 ): asserts obj is NonNullable<T> {
-    if (obj == null) throw new TypeError(msg);
+    if (obj == null)
+        throw new TypeError(`${msg ? msg + ', ' : ''}Input doesn't exist`);
 }
 
 export function isExist<T extends any>(obj: T): obj is NonNullable<T> {
