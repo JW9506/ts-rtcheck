@@ -5,6 +5,8 @@ A Typescript runtime checker
 ```ts
 import assert from 'assert';
 
+export type isSameType<T, U> = (T extends U ? true : false) & (U extends T ? true : false);
+
 assert.throws(() => {
     const unknownPerson: unknown = {
         name: 'jacky',
