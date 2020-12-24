@@ -7,7 +7,6 @@
       "dom",
       "esnext"
     ],
-    "outDir": "./dist",
     "sourceMap": true,
     "noEmit": true,
     "skipLibCheck": true,

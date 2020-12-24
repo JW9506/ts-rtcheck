@@ -1,5 +1,5 @@
 import { AnyFunction, AssertType, forceCast, isSameType, isType } from '../src';
-import assert from 'assert';
+import assert = require('assert');
 
 (() => {
     const unknownObj: unknown = {
@@ -267,20 +267,20 @@ assert.throws(() => {
     > = true;
 });
 
-assert.throws(() => {
+(() => {
     const unknown: unknown = '456';
     AssertType(unknown, 'string');
     const T: isSameType<typeof unknown, string> = true;
-});
+})();
 
-assert.throws(() => {
+(() => {
     const unknown: unknown = '456';
     if (isType(unknown, 'string')) {
         unknown.toUpperCase();
     }
     AssertType(unknown, 'string');
     const T: isSameType<typeof unknown, string> = true;
-});
+})();
 
 assert.throws(() => {
     const unknown: unknown = {
@@ -334,4 +334,9 @@ assert.throws(() => {
         age: 10,
     };
     forceCast<{ name: string; age: number }>(obj);
+})();
+
+(() => {
+    const str: unknown = '456';
+    AssertType(str, 'string');
 })();

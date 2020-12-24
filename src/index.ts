@@ -118,6 +118,8 @@ export function AssertType<
                     obj === null ? null : typeof obj
                 }"`
             );
+        } else {
+          return;
         }
     }
     if (Array.isArray(obj) !== Array.isArray(typeShape))

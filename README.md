@@ -59,14 +59,14 @@ assert.throws(() => {
     const T: isSameType<typeof unknownPplList, { name: number | string; age: number; phone: object | number }[]> = true;
 });
 
-assert.throws(() => {
+(() => {
     const unknown: unknown = '456';
     if (isType(unknown, 'string')) {
         unknown.toUpperCase();
     }
     AssertType(unknown, 'string');
     const T: isSameType<typeof unknown, string> = true;
-});
+})();
 
 assert.throws(() => {
     const unknownPplList: unknown = [{ name: 'bart' }];
