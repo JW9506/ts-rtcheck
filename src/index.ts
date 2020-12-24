@@ -11,7 +11,9 @@ type ShiftArr<T extends string[] | string> = T extends [
     ...rest: infer R
 ]
     ? R
-    : T;
+    : T extends string
+    ? T
+    : never;
 type Inner<P> = P extends 'bigint'
     ? bigint
     : P extends 'boolean'
@@ -87,15 +89,37 @@ export type isSameType<T, U> = (T extends U ? true : false) &
 
 export type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R;
 
-export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
+function errMsg(key: any, shape: any, obj: any, msg?: string) {
+    return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
+        Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
+    }", got "${Object.is(obj[key], null) ? null : typeof obj[key]}"`;
+}
+
+export function AssertType<
+    U = undefined,
+    T extends Keys<U> | Primitives = Keys<U>
+>(
     obj: unknown,
     typeShape: T,
     msg?: string
-): asserts obj is U extends undefined
+): asserts obj is T extends Primitives
+    ? MapPrimitive<[T]>
+    : U extends undefined
     ? Assert<T>
     : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
+    if (typeof obj !== 'object') {
+        if (typeof obj !== typeShape) {
+            throw TypeError(
+                `${
+                    msg ? msg + ', ' : ''
+                }Input is expected to be of type "${typeShape}", got "${
+                    obj === null ? null : typeof obj
+                }"`
+            );
+        }
+    }
     if (Array.isArray(obj) !== Array.isArray(typeShape))
         throw new TypeError(
             'Passed in value is expected to be of type "Array"'
@@ -103,12 +127,6 @@ export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     const shape = (Array.isArray(typeShape)
         ? typeShape[0]
         : typeShape) as Record<string, Primitives | Primitives[]>;
-
-    const errMsg = (key: any, shape: any, obj: any, msg?: string) => {
-        return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
-            Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
-        }", got "${Object.is(obj[key], null) ? null : typeof obj[key]}"`;
-    };
 
     const checkOneObj = (obj: any) => {
         for (const key in shape) {
@@ -144,10 +162,12 @@ export function AssertType<U = undefined, T extends Keys<U> = Keys<U>>(
     }
 }
 
-export function isType<U = undefined, T extends Keys<U> = Keys<U>>(
+export function isType<U = undefined, T extends Keys<U> | Primitives = Keys<U>>(
     obj: unknown,
     typeShape: T
-): obj is U extends undefined
+): obj is T extends Primitives
+    ? MapPrimitive<[T]>
+    : U extends undefined
     ? Assert<T>
     : U extends Array<infer R>
     ? Array<FilterObject<R>>

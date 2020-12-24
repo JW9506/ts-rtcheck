@@ -1,9 +1,4 @@
-import {
-  AnyFunction,
-    AssertType,
-    isObject,
-    isType,
-} from '.';
+import { AnyFunction, AssertType, isObject, isSameType, isType } from '.';
 import assert from 'assert';
 
 const unknownObj: unknown = {
@@ -103,7 +98,10 @@ assert.throws(() => {
         age: 'number',
         phone: ['number', 'string'],
     });
-    unknownPerson;
+    const T: isSameType<
+        typeof unknownPerson,
+        { name: string; age: number; phone: number | string }
+    > = true;
 });
 
 assert.throws(() => {
@@ -174,12 +172,12 @@ assert.throws(() => {
     unknownPplList;
 });
 
-(() => {
+assert.throws(() => {
     const unknownPplList: unknown = [
         {
             name: 'lily',
-            age: 15,
-            phone: { brand: 'apple' },
+            age: '15',
+            phone: '954',
         },
         {
             name: 5,
@@ -194,11 +192,29 @@ assert.throws(() => {
         {
             name: ['string', 'number'],
             age: 'number',
-            phone: ['number', 'object'],
+            phone: ['string', 'object'],
         },
     ]);
-    unknownPplList;
-})();
+    const T: isSameType<
+        typeof unknownPplList,
+        { name: number | string; age: number; phone: object | number }[]
+    > = true;
+});
+
+assert.throws(() => {
+    const unknown: unknown = '456';
+    AssertType(unknown, 'string');
+    const T: isSameType<typeof unknown, string> = true;
+});
+
+assert.throws(() => {
+    const unknown: unknown = '456';
+    if (isType(unknown, 'string')) {
+        unknown.toUpperCase();
+    }
+    AssertType(unknown, 'string');
+    const T: isSameType<typeof unknown, string> = true;
+});
 
 assert.throws(() => {
     const unknown: unknown = {
@@ -207,7 +223,10 @@ assert.throws(() => {
     AssertType(unknown, {
         a: ['number', 'string', 'undefined', 'object'],
     });
-    console.log(unknown.a);
+    const T: isSameType<
+        typeof unknown,
+        { a: string | number | Record<string, unknown> | undefined }
+    > = true;
 });
 
 assert.throws(() => {
@@ -217,7 +236,7 @@ assert.throws(() => {
     AssertType(unknown, {
         a: 'object',
     });
-    console.log(unknown.a);
+    const T: isSameType<typeof unknown, { a: Record<string, unknown> }> = true;
 });
 
 (() => {
@@ -227,7 +246,7 @@ assert.throws(() => {
     AssertType(unknown, {
         a: 'object',
     });
-    console.log('unknown.a is an object');
+    const T: isSameType<typeof unknown, { a: Record<string, unknown> }> = true;
 })();
 
 assert.throws(() => {
@@ -237,5 +256,8 @@ assert.throws(() => {
     AssertType(unknown, {
         a: ['number', 'object'],
     });
-    console.log(unknown.a);
+    const T: isSameType<
+        typeof unknown,
+        { a: number | Record<string, unknown> }
+    > = true;
 });
