@@ -202,6 +202,59 @@ assert.throws(() => {
 });
 
 assert.throws(() => {
+    const unknownPplList: unknown = [{ name: 'bart' }];
+
+    AssertType(unknownPplList, [
+        {
+            name: ['string', 'number'],
+            foo: ['object', 'number'],
+        },
+    ]);
+    const T: isSameType<
+        typeof unknownPplList,
+        { name: number | string; foo: Record<string, unknown> | number }[]
+    > = true;
+});
+
+assert.throws(() => {
+    const unknownPplList: unknown = [{ name: 'bart' }];
+
+    AssertType<[{ bart: string }]>(unknownPplList, [
+        {
+            name: ['string', 'number'],
+            foo: ['object', 'number'],
+        },
+    ]);
+    const T: isSameType<typeof unknownPplList, { bart: string }[]> = true;
+});
+
+assert.throws(() => {
+    const unknownPplList: unknown = [{ name: 'bart' }];
+
+    AssertType<[{ name: { foo: { bart: { lisa: string } } } }]>(unknownPplList, [{
+        name: 'object',
+    }]);
+    unknownPplList[0].name.foo?.bart?.lisa;
+    const T: isSameType<
+        typeof unknownPplList,
+        { name: { foo?: { bart?: { lisa?: string } } } }[]
+    > = true;
+});
+
+assert.throws(() => {
+    const unknownPplList: unknown = [{ name: 'bart' }];
+
+    AssertType<[{ name: { foo: { bart: { lisa: string } } } }]>(unknownPplList, [{
+        name: 'object',
+    }]);
+    unknownPplList[0].name.foo?.bart?.lisa;
+    const T: isSameType<
+        typeof unknownPplList,
+        { name: { foo?: { bart?: { lisa?: string } } } }[]
+    > = true;
+});
+
+assert.throws(() => {
     const unknown: unknown = '456';
     AssertType(unknown, 'string');
     const T: isSameType<typeof unknown, string> = true;

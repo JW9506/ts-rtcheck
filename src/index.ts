@@ -6,48 +6,46 @@ type Primitives =
     | 'undefined'
     | 'function';
 
-type ShiftArr<T extends string[] | string> = T extends [
-    _: any,
-    ...rest: infer R
-]
+type ShiftArr<T> = T extends [_: any, ...rest: infer R]
     ? R
     : T extends string
     ? T
     : never;
-type Inner<P> = P extends 'bigint'
-    ? bigint
+type Inner<P> = P extends 'string'
+    ? string
+    : P extends 'number'
+    ? number
+    : P extends 'function'
+    ? AnyFunction
     : P extends 'boolean'
     ? boolean
     : P extends 'undefined'
     ? undefined
-    : P extends 'number'
-    ? number
+    : P extends 'bigint'
+    ? bigint
     : P extends 'object'
     ? Record<string, unknown>
-    : P extends 'string'
-    ? string
     : never;
 
 type Unwrap<T> = T extends any[] ? T[0] : T;
 type PrimitivesTuple =
     | [Primitives, Primitives]
     | [Primitives, Primitives, Primitives]
-    | [Primitives, Primitives, Primitives, Primitives];
+    | [Primitives, Primitives, Primitives, Primitives]
+    | [Primitives, Primitives, Primitives, Primitives, Primitives];
 
-type MapPrimitive<P extends any[] | string, O = never> = {
+type MapPrimitive<P extends any[] | string | any, O = never> = {
     0: MapPrimitive<ShiftArr<P>, O | Inner<Unwrap<P>>>;
     1: O;
     2: Inner<P>;
 }[P extends [] ? 1 : P extends string ? 2 : 0];
 
-type Assert<S> = S extends Array<infer R>
-    ? R extends Record<string, Primitives | PrimitivesTuple>
-        ? Array<
-              {
-                  [W in keyof R]: MapPrimitive<R[W]>;
-              }
-          >
-        : never
+type Assert<S> = S extends [infer U]
+    ? Array<
+          {
+              [W in keyof U]: MapPrimitive<U[W]>;
+          }
+      >
     : S extends Record<string, Primitives | PrimitivesTuple>
     ? {
           [W in keyof S]: MapPrimitive<S[W]>;
@@ -56,31 +54,36 @@ type Assert<S> = S extends Array<infer R>
 
 type Keys<T> = T extends undefined
     ? Record<string, Primitives | PrimitivesTuple>
-    : T extends Array<unknown>
+    : T extends Array<any>
     ? Array<Record<string, Primitives | PrimitivesTuple>>
-    : T extends Array<infer R>
-    ? Array<
-          {
-              [K in keyof R]: Primitives | PrimitivesTuple;
-          }
-      >
-    : {
+    : /* Record<keyof U & string, Primitives | PrimitivesTuple>> */
+      // : T extends  [infer R] /* Array<infer R> */
+      // ? [
+      //       {
+      //           [K in keyof R]: Primitives | PrimitivesTuple;
+      //       }
+      //   ]
+      {
           [K in keyof T]: Primitives | PrimitivesTuple;
       };
+
+export type PowerPartial<T> = {
+    [U in keyof T]?: T[U] extends object ? PowerPartial<T[U]> : T[U];
+};
 
 type FilterObject<T> = T extends Array<infer R>
     ? {
           [K in keyof R]: R[K] extends AnyFunction
               ? R[K]
               : R extends Record<string, any>
-              ? Partial<R[K]>
+              ? PowerPartial<R[K]>
               : R[K];
       }
     : {
           [K in keyof T]: T[K] extends AnyFunction
               ? T[K]
               : T extends Record<string, any>
-              ? Partial<T[K]>
+              ? PowerPartial<T[K]>
               : T[K];
       };
 
@@ -97,7 +100,10 @@ function errMsg(key: any, shape: any, obj: any, msg?: string) {
 
 export function AssertType<
     U = undefined,
-    T extends Keys<U> | Primitives = Keys<U>
+    T extends
+        | Keys<U>
+        | Primitives
+        | [Record<string, Primitives | Primitives[]>] = Keys<U>
 >(
     obj: unknown,
     typeShape: T,
@@ -106,7 +112,7 @@ export function AssertType<
     ? MapPrimitive<[T]>
     : U extends undefined
     ? Assert<T>
-    : U extends Array<infer R>
+    : U extends [infer R]
     ? Array<FilterObject<R>>
     : FilterObject<U> {
     if (typeof obj !== 'object') {
@@ -162,14 +168,20 @@ export function AssertType<
     }
 }
 
-export function isType<U = undefined, T extends Keys<U> | Primitives = Keys<U>>(
+export function isType<
+    U = undefined,
+    T extends
+        | Keys<U>
+        | Primitives
+        | [Record<string, Primitives | Primitives[]>] = Keys<U>
+>(
     obj: unknown,
     typeShape: T
 ): obj is T extends Primitives
     ? MapPrimitive<[T]>
     : U extends undefined
     ? Assert<T>
-    : U extends Array<infer R>
+    : U extends [infer R]
     ? Array<FilterObject<R>>
     : FilterObject<U> {
     try {
