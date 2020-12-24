@@ -1,8 +1,6 @@
 import {
-    AnyFunction,
-    AssertExist,
+  AnyFunction,
     AssertType,
-    isExist,
     isObject,
     isType,
 } from './typeLib';
