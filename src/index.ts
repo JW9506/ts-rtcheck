@@ -216,4 +216,6 @@ export function isExist<T extends any>(obj: T): obj is NonNullable<T> {
     return obj != null;
 }
 
-export function forceCast<T>(obj: any): asserts obj is T {}
+export function forceCast<T>(obj: any, cb?: AnyFunction<[T]>): asserts obj is T {
+  cb?.(obj);
+}

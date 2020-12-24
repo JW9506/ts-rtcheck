@@ -106,4 +106,19 @@ assert.throws(() => {
     unknownPplList[0].name.foo?.bart?.lisa;
     const T: isSameType<typeof unknownPplList, { name: { foo?: { bart?: { lisa?: string } } } }[]> = true;
 });
+
+(() => {
+    const unknown: unknown = {
+        name: 'bar',
+    };
+    type Person = {
+        name: string;
+        age: number;
+    };
+    forceCast<Person>(unknown, (obj) => {
+        obj.age = 123;
+    });
+    const T: isSameType<typeof unknown.age, number> = true;
+    const TT: isSameType<typeof unknown, Person> = true;
+})();
 ```

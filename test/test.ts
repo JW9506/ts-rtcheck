@@ -340,3 +340,18 @@ assert.throws(() => {
     const str: unknown = '456';
     AssertType(str, 'string');
 })();
+
+(() => {
+  const unknown: unknown = {
+    name: 'bar',
+  }
+  type Person = {
+    name: string;
+    age: number;
+  };
+  forceCast<Person>(unknown, (obj) => {
+    obj.age = 123;
+  })
+  const T: isSameType<typeof unknown.age, number> = true;
+  const TT: isSameType<typeof unknown, Person> = true;
+})();
