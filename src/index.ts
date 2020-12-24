@@ -119,7 +119,7 @@ export function AssertType<
                 }"`
             );
         } else {
-          return;
+            return;
         }
     }
     if (Array.isArray(obj) !== Array.isArray(typeShape))
@@ -216,6 +216,17 @@ export function isExist<T extends any>(obj: T): obj is NonNullable<T> {
     return obj != null;
 }
 
-export function forceCast<T>(obj: any, cb?: AnyFunction<[T]>): asserts obj is T {
-  cb?.(obj);
+type TakeLastType<T, U> = U extends undefined ? T : Omit<T, keyof U> & U;
+type RemoveKey<T, U> = U extends undefined
+    ? T
+    : T &
+          {
+              [K in keyof U]: any;
+          };
+
+export function forceCast<T, U = undefined>(
+    obj: any,
+    cb?: AnyFunction<[RemoveKey<T, U>]>
+): asserts obj is TakeLastType<T, U> {
+    cb?.(obj);
 }

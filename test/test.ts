@@ -342,16 +342,39 @@ assert.throws(() => {
 })();
 
 (() => {
-  const unknown: unknown = {
-    name: 'bar',
-  }
-  type Person = {
-    name: string;
-    age: number;
-  };
-  forceCast<Person>(unknown, (obj) => {
-    obj.age = 123;
-  })
-  const T: isSameType<typeof unknown.age, number> = true;
-  const TT: isSameType<typeof unknown, Person> = true;
+    const unknown: unknown = {
+        name: 'bar',
+    };
+    type Person = {
+        name: string;
+        age: number;
+    };
+    forceCast<Person>(unknown, (obj) => {
+        obj.age = 123;
+    });
+    const T: isSameType<typeof unknown.age, number> = true;
+    const TT: isSameType<typeof unknown, Person> = true;
+})();
+
+(() => {
+    const unknown: unknown = {
+        id: 'abc',
+    };
+    AssertType(unknown, { id: ['string', 'number'] });
+    unknown;
+})();
+
+(() => {
+    const unknown: unknown = {
+        name: 'bar',
+    };
+    type Person = {
+        name: string;
+        age: number;
+    };
+    forceCast<Person, { age: string }>(unknown, (obj) => {
+        obj.age = obj.age.toString();
+    });
+    const T: isSameType<typeof unknown.age, string> = true;
+    const TT: isSameType<typeof unknown, { name: string; age: string }> = true;
 })();
