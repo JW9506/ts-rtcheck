@@ -1,14 +1,28 @@
 {
   "name": "ts-rtcheck",
-  "version": "1.0.6",
-  "main": "src/index.ts",
+  "version": "1.0.7",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "author": "'JW9506' <'cf.dota@gmail.com'>",
   "license": "MIT",
-  "repository": "https://github.com/JW9506/ts-rtcheck",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JW9506/ts-rtcheck"
+  },
   "peerDependencies": {
     "typescript": "^4.0.0"
   },
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "test": "ts-node test/test.ts"
+  },
   "devDependencies": {
-    "@types/assert": "^1.5.2"
+    "@types/assert": "^1.5.2",
+    "ts-node": "^9.1.1",
+    "typescript": "4.1.3"
   }
 }

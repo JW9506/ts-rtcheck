@@ -1,4 +1,4 @@
-import { AnyFunction, AssertType, forceCast, isSameType, isType } from '.';
+import { AnyFunction, AssertType, forceCast, isSameType, isType } from '../src';
 import assert from 'assert';
 
 (() => {
