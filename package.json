@@ -1,10 +1,14 @@
 {
-  "name": "ts-experiment-git-base",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "ts-rtcheck",
+  "version": "1.0.1",
+  "main": "src/index.ts",
   "author": "'JW9506' <'cf.dota@gmail.com'>",
   "license": "MIT",
-  "dependencies": {
+  "repository": "https://github.com/JW9506/ts-rtcheck",
+  "peerDependencies": {
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
     "@types/assert": "^1.5.2"
   }
 }

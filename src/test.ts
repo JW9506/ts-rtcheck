@@ -3,7 +3,7 @@ import {
     AssertType,
     isObject,
     isType,
-} from './typeLib';
+} from '.';
 import assert from 'assert';
 
 const unknownObj: unknown = {
@@ -103,7 +103,7 @@ assert.throws(() => {
         age: 'number',
         phone: ['number', 'string'],
     });
-    unknownPerson.phone;
+    unknownPerson;
 });
 
 assert.throws(() => {
