@@ -56,14 +56,7 @@ type Keys<T> = T extends undefined
     ? Record<string, Primitives | PrimitivesTuple>
     : T extends Array<any>
     ? Array<Record<string, Primitives | PrimitivesTuple>>
-    : /* Record<keyof U & string, Primitives | PrimitivesTuple>> */
-      // : T extends  [infer R] /* Array<infer R> */
-      // ? [
-      //       {
-      //           [K in keyof R]: Primitives | PrimitivesTuple;
-      //       }
-      //   ]
-      {
+    : {
           [K in keyof T]: Primitives | PrimitivesTuple;
       };
 
@@ -88,9 +81,10 @@ type FilterObject<T> = T extends Array<infer R>
       };
 
 export type isSameType<T, U> = (T extends U ? true : false) &
-    (U extends T ? true : false);
+    (U extends T ? true : false) &
+    true;
 
-export type AnyFunction<T extends any[] = any[], R = void> = (...args: T) => R;
+export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
 
 function errMsg(key: any, shape: any, obj: any, msg?: string) {
     return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
@@ -112,7 +106,7 @@ export function AssertType<
     ? MapPrimitive<[T]>
     : U extends undefined
     ? Assert<T>
-    : U extends [infer R]
+    : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
     if (typeof obj !== 'object') {
@@ -220,4 +214,4 @@ export function isExist<T extends any>(obj: T): obj is NonNullable<T> {
     return obj != null;
 }
 
-export function forceCast<T>(obj: any): asserts obj is T { }
+export function forceCast<T>(obj: any): asserts obj is T {}

@@ -1,6 +1,6 @@
 {
   "name": "ts-rtcheck",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "main": "src/index.ts",
   "author": "'JW9506' <'cf.dota@gmail.com'>",
   "license": "MIT",

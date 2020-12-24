@@ -1,14 +1,27 @@
-import { AnyFunction, AssertType, forceCast, isObject, isSameType, isType } from '.';
+import { AnyFunction, AssertType, forceCast, isSameType, isType } from '.';
 import assert from 'assert';
 
-const unknownObj: unknown = {
-    a: '123',
-    b: 456,
-    c: {
-        d: 9,
-        e: '10',
-    },
-};
+(() => {
+    const unknownObj: unknown = {
+        a: '123',
+        b: 456,
+        c: {
+            d: 9,
+            e: '10',
+        },
+    };
+    AssertType(unknownObj, {
+        a: 'string',
+        b: 'number',
+        c: 'object',
+    });
+    const c = unknownObj.c;
+    AssertType(c, {
+        d: 'number',
+        e: 'string',
+    });
+    const T: isSameType<typeof c.e, string> = true;
+})();
 
 interface Book {
     title: string;
@@ -18,74 +31,66 @@ interface Book {
     author?: string;
 }
 
-const unknownData: unknown = {
-    title: 'Lovely',
-    year: 2020,
-    Anull: { secret: '456' },
-    AFun() {
-        console.log('AFun!');
-    },
-};
-
-if (
-    isType<Book>(unknownData, {
-        title: 'string',
-        year: 'number',
-        AFun: 'function',
-        Anull: 'object',
-    })
-) {
-    console.log(unknownData.title);
-    console.log(unknownData.year);
-    console.log(unknownData.author);
-    console.log(unknownData.Anull.secret?.charAt(2));
-    unknownData.AFun();
-}
-
-if (isType(unknownObj, { a: 'string', b: 'number' })) {
-    console.log(unknownObj.a.charAt(1));
-    console.log(unknownObj.b + 1);
-}
-
-if (
-    isObject(unknownObj) &&
-    isObject(unknownObj.c) &&
-    isType(unknownObj.c, { d: 'number', e: 'string' })
-) {
-    console.log(unknownObj.c.d + 123);
-    console.log(unknownObj.c.e.charAt(1));
-}
-
-console.log('Separator --------');
-if (isType(unknownObj, { a: 'string', b: 'number', c: 'object' })) {
-    if (isType(unknownObj.c, { d: 'number' })) {
-        console.log(unknownObj.c.d * 10);
+(() => {
+    const unknownData: unknown = {
+        title: 'Lovely',
+        year: 2020,
+        Anull: { secret: '456' },
+        AFun() {
+            console.log('AFun!');
+        },
+    };
+    if (
+        isType<Book>(unknownData, {
+            title: 'string',
+            year: 'number',
+            AFun: 'function',
+            Anull: 'object',
+        })
+    ) {
+        const T: isSameType<typeof unknownData.AFun, () => any> = true;
+    } else {
+        throw 1;
     }
-}
+})();
 
-AssertType(unknownObj, { a: 'string' });
+(() => {
+    const unknownObj: unknown = {
+        a: '123',
+        b: 456,
+        c: {
+            d: 9,
+            e: '10',
+        },
+    };
+    if (isType(unknownObj, { a: 'string', b: 'number', c: 'object' })) {
+    } else {
+        throw 1;
+    }
+})();
 
-console.log(unknownObj.a);
+(() => {
+    const unknownObj: unknown = {
+        a: '123',
+        b: 456,
+        c: {
+            d: 9,
+            e: '10',
+        },
+    };
+
+    if (isType(unknownObj, { a: 'string', b: 'number', c: 'object' })) {
+        if (isType(unknownObj.c, { d: 'number' })) {
+            unknownObj.c.d.toPrecision();
+        }
+    }
+})();
 
 interface Person {
     name: string;
     age: number;
     phone: { brand: string };
 }
-
-assert.throws(() => {
-    const unknownPerson: unknown = {
-        name: 'jacky',
-        age: 13,
-        phone: { brand: 'apple' },
-    };
-    AssertType(unknownPerson, {
-        name: 'number',
-        age: 'number',
-        phone: 'number',
-    });
-    unknownPerson.phone + 1;
-});
 
 assert.throws(() => {
     const unknownPerson: unknown = {
@@ -231,9 +236,14 @@ assert.throws(() => {
 assert.throws(() => {
     const unknownPplList: unknown = [{ name: 'bart' }];
 
-    AssertType<[{ name: { foo: { bart: { lisa: string } } } }]>(unknownPplList, [{
-        name: 'object',
-    }]);
+    AssertType<[{ name: { foo: { bart: { lisa: string } } } }]>(
+        unknownPplList,
+        [
+            {
+                name: 'object',
+            },
+        ]
+    );
     unknownPplList[0].name.foo?.bart?.lisa;
     const T: isSameType<
         typeof unknownPplList,
@@ -244,13 +254,16 @@ assert.throws(() => {
 assert.throws(() => {
     const unknownPplList: unknown = [{ name: 'bart' }];
 
-    AssertType<[{ name: { foo: { bart: { lisa: string } } } }]>(unknownPplList, [{
-        name: 'object',
-    }]);
-    unknownPplList[0].name.foo?.bart?.lisa;
+    AssertType<{ name: object | undefined; age: number }[]>(unknownPplList, [
+        {
+            name: ['object', 'undefined'],
+            age: 'number',
+        },
+    ]);
+    // unknownPplList[0];
     const T: isSameType<
         typeof unknownPplList,
-        { name: { foo?: { bart?: { lisa?: string } } } }[]
+        { name: object | undefined; age: number }[]
     > = true;
 });
 
@@ -316,9 +329,9 @@ assert.throws(() => {
 });
 
 (() => {
-  const obj: unknown = {
-    name: 'foo',
-    age: 10,
-  }
-  forceCast<{name: string, age: number}>(obj)
+    const obj: unknown = {
+        name: 'foo',
+        age: 10,
+    };
+    forceCast<{ name: string; age: number }>(obj);
 })();
