@@ -1,4 +1,4 @@
-import { AnyFunction, AssertType, isObject, isSameType, isType } from '.';
+import { AnyFunction, AssertType, forceCast, isObject, isSameType, isType } from '.';
 import assert from 'assert';
 
 const unknownObj: unknown = {
@@ -314,3 +314,11 @@ assert.throws(() => {
         { a: number | Record<string, unknown> }
     > = true;
 });
+
+(() => {
+  const obj: unknown = {
+    name: 'foo',
+    age: 10,
+  }
+  forceCast<{name: string, age: number}>(obj)
+})();

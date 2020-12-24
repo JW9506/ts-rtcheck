@@ -219,3 +219,5 @@ export function AssertExist<T extends any>(
 export function isExist<T extends any>(obj: T): obj is NonNullable<T> {
     return obj != null;
 }
+
+export function forceCast<T>(obj: any): asserts obj is T { }
