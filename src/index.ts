@@ -114,6 +114,12 @@ function errMsg(key: any, shape: any, obj: any, msg?: string) {
     }"`;
 }
 
+type Condition<U, T> = U extends undefined
+    ? Assert<T>
+    : U extends Array<infer R>
+    ? Array<FilterObject<R>>
+    : FilterObject<U>;
+
 export function AssertType<
     U = undefined,
     T extends
@@ -130,16 +136,8 @@ export function AssertType<
     : T extends Array<infer R>
     ? R extends Primitives
         ? Assert<R>
-        : U extends undefined
-        ? Assert<T>
-        : U extends Array<infer R>
-        ? Array<FilterObject<R>>
-        : FilterObject<U>
-    : U extends undefined
-    ? Assert<T>
-    : U extends Array<infer R>
-    ? Array<FilterObject<R>>
-    : FilterObject<U> {
+        : Condition<U, T>
+    : Condition<U, T> {
     if (typeof obj !== 'object') {
         if (Array.isArray(typeShape)) {
             const flag = typeShape.some((type) => {
@@ -248,16 +246,8 @@ export function isType<
     : T extends Array<infer R>
     ? R extends Primitives
         ? Assert<R>
-        : U extends undefined
-        ? Assert<T>
-        : U extends Array<infer R>
-        ? Array<FilterObject<R>>
-        : FilterObject<U>
-    : U extends undefined
-    ? Assert<T>
-    : U extends Array<infer R>
-    ? Array<FilterObject<R>>
-    : FilterObject<U> {
+        : Condition<U, T>
+    : Condition<U, T> {
     try {
         AssertType(obj, typeShape as any);
     } catch {
