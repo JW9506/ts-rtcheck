@@ -105,7 +105,13 @@ export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
 function errMsg(key: any, shape: any, obj: any, msg?: string) {
     return `${msg ? msg + ', ' : ''}${key} is expected to be of type "${
         Array.isArray(shape[key]) ? shape[key].join(' | ') : shape[key]
-    }", got "${obj[key] === null ? null : typeof obj[key]}"`;
+    }", got "${
+        obj[key] === null
+            ? null
+            : Array.isArray(obj[key])
+            ? 'array'
+            : typeof obj[key]
+    }"`;
 }
 
 export function AssertType<
@@ -170,9 +176,14 @@ export function AssertType<
     if (Array.isArray(obj) && typeShape === 'array') {
         return;
     }
+    if (Array.isArray(obj) && typeShape === 'object') {
+        throw new TypeError(
+            'Input is expected to be of type "object", got "array"'
+        );
+    }
     if (Array.isArray(obj) !== Array.isArray(typeShape))
         throw new TypeError(
-            'Passed in value is expected to be of type "Array"'
+            `Input is expected to be of type "array", got ${typeof obj}`
         );
     const shape = (Array.isArray(typeShape)
         ? typeShape[0]
@@ -182,10 +193,16 @@ export function AssertType<
         for (const key in shape) {
             if (Array.isArray(shape[key])) {
                 const flag = (shape[key] as Primitives[]).some((type) => {
-                    if (type === 'object' && obj[key] === null) {
+                    if (
+                        (type === 'object' && obj[key] === null) ||
+                        (type === 'object' && Array.isArray(obj[key]))
+                    ) {
                         return false;
                     }
-                    return obj != null && typeof obj[key] === type;
+                    return (
+                        (Array.isArray(obj[key]) && type === 'array') ||
+                        (obj != null && typeof obj[key] === type)
+                    );
                 });
                 if (!flag) {
                     throw new TypeError(errMsg(key, shape, obj, msg));
@@ -193,6 +210,7 @@ export function AssertType<
             } else {
                 if (
                     (shape[key] === 'object' && obj[key] === null) ||
+                    (shape[key] === 'object' && Array.isArray(obj[key])) ||
                     obj == null ||
                     typeof obj[key] !== shape[key]
                 ) {

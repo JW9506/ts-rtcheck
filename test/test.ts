@@ -8,6 +8,7 @@ import {
     PowerPartial,
 } from '../src';
 import assert from 'assert';
+import { JSDocUnknownTag } from 'typescript';
 
 (() => {
     const unknownObj: unknown = {
@@ -467,10 +468,7 @@ assert.throws(() => {
         { name: string | undefined; notes: unknown[] }
     > = true;
     forceCast<PowerNonNullable<typeof unknown>>(unknown);
-    const TT: isSameType<
-        typeof unknown,
-        { name: string; notes: {}[] }
-    > = true;
+    const TT: isSameType<typeof unknown, { name: string; notes: {}[] }> = true;
 });
 
 (() => {
@@ -515,8 +513,140 @@ assert.throws(() => {
     > = true;
     unknown[0].diary[99]?.detail?.rain?.afternoon; // afternoon is boolean | undefined;
     assert(unknown[0].diary[0]?.detail?.rain?.afternoon === true);
-    assert.throws(() => {
-        forceCast<PowerNonNullable<typeof unknown>>(unknown);
-        unknown[999].diary[999].detail.rain.afternoon; // afternoon is boolean;
+    forceCast<PowerNonNullable<typeof unknown>>(unknown, (obj) => {
+        obj.push({
+            name: 'lisa',
+            diary: [
+                {
+                    detail: {
+                        page: 1,
+                        rain: { morning: true, afternoon: true },
+                    },
+                },
+            ],
+        });
     });
+    assert(unknown[1].diary[0].detail.rain.afternoon === true);
+})();
+
+(() => {
+    const unknown: unknown = {
+        name: ['a', 'b'],
+    };
+    try {
+        AssertType(unknown, {
+            name: 'object',
+        });
+        const T: isSameType<
+            typeof unknown,
+            { name: Record<string, unknown> }
+        > = true;
+    } catch (error) {
+        assert(
+            error.message ===
+                'name is expected to be of type "object", got "array"'
+        );
+    }
+})();
+
+(() => {
+    const unknwon: unknown = ['a', 'b'];
+    try {
+        AssertType(unknwon, 'object');
+    } catch (error) {
+        assert(
+            error.message ===
+                'Input is expected to be of type "object", got "array"'
+        );
+    }
+})();
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bar',
+            notes: ['foo', 'baz', 'foe'],
+        },
+    ];
+    try {
+        AssertType(unknown, [
+            {
+                name: 'string',
+                notes: 'object',
+            },
+        ]);
+        const T: isSameType<
+            typeof unknown,
+            { name: string; notes: Record<string, unknown> }[]
+        > = true;
+    } catch (error) {
+        assert(
+            error.message ===
+                'notes is expected to be of type "object", got "array"'
+        );
+    }
+})();
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bar',
+            notes: ['foo', 'baz', 'foe'],
+        },
+    ];
+    try {
+        AssertType(unknown, [
+            {
+                name: 'string',
+                notes: ['object', 'string'],
+            },
+        ]);
+        const T: isSameType<
+            typeof unknown,
+            { name: string; notes: Record<string, unknown> | string }[]
+        > = true;
+    } catch (error) {
+        assert(
+            error.message ===
+                'notes is expected to be of type "object | string", got "array"'
+        );
+    }
+})();
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bar',
+            notes: ['foo', 'baz', 'foe'],
+        },
+    ];
+    AssertType(unknown, [
+        {
+            name: 'string',
+            notes: ['object', 'array'],
+        },
+    ]);
+    const T: isSameType<
+        typeof unknown,
+        { name: string; notes: Record<string, unknown> | unknown[] }[]
+    > = true;
+})();
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bar',
+            notes: {},
+        },
+    ];
+    AssertType(unknown, [
+        {
+            name: 'string',
+            notes: ['object', 'array'],
+        },
+    ]);
+    const T: isSameType<
+        typeof unknown,
+        { name: string; notes: Record<string, unknown> | unknown[] }[]
+    > = true;
 })();
