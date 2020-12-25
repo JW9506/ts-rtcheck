@@ -5,7 +5,8 @@ A Typescript runtime checker
 ```ts
 import assert from 'assert';
 
-export type isSameType<T, U> = (T extends U ? true : false) & (U extends T ? true : false);
+export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any ? true : never) &
+    (((a: U) => any) extends (a: T) => any ? true : never);
 
 assert.throws(() => {
     const unknownPerson: unknown = {
@@ -120,5 +121,27 @@ assert.throws(() => {
     });
     const T: isSameType<typeof unknown.age, number> = true;
     const TT: isSameType<typeof unknown, Person> = true;
+})();
+
+(() => {
+    const str: unknown = '456';
+    AssertType(str, ['string', 'number']);
+    const T: isSameType<typeof str, string | number> = true;
+})();
+
+(() => {
+    const unknown: unknown = {
+        name: 'bar',
+        age: 1,
+    };
+    type Person = {
+        name: string;
+        age: number;
+    };
+    forceCast<Person, { age: string }>(unknown, (obj) => {
+        obj.age = obj.age.toString();
+    });
+    const T: isSameType<typeof unknown.age, string> = true;
+    const TT: isSameType<typeof unknown, { name: string; age: string }> = true;
 })();
 ```

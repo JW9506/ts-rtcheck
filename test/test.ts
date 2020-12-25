@@ -260,7 +260,6 @@ assert.throws(() => {
             age: 'number',
         },
     ]);
-    // unknownPplList[0];
     const T: isSameType<
         typeof unknownPplList,
         { name: object | undefined; age: number }[]
@@ -339,7 +338,26 @@ assert.throws(() => {
 (() => {
     const str: unknown = '456';
     AssertType(str, 'string');
+    const T: isSameType<typeof str, string> = true;
 })();
+
+(() => {
+    const str: unknown = '456';
+    AssertType(str, ['string', 'number']);
+    const T: isSameType<typeof str, string | number> = true;
+})();
+
+assert.throws(() => {
+    const str: unknown = true;
+    AssertType(str, ['string', 'number']);
+    const T: isSameType<typeof str, string | number> = true;
+});
+
+assert.throws(() => {
+    const str: unknown = true;
+    AssertType(str, ['string', 'number', 'undefined']);
+    const T: isSameType<typeof str, string | number | undefined> = true;
+});
 
 (() => {
     const unknown: unknown = {
@@ -367,6 +385,7 @@ assert.throws(() => {
 (() => {
     const unknown: unknown = {
         name: 'bar',
+        age: 1,
     };
     type Person = {
         name: string;

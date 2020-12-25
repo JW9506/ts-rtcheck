@@ -50,7 +50,7 @@ type Assert<S> = S extends [infer U]
     ? {
           [W in keyof S]: MapPrimitive<S[W]>;
       }
-    : never;
+    : MapPrimitive<[S]>;
 
 type Keys<T> = T extends undefined
     ? Record<string, Primitives | PrimitivesTuple>
@@ -80,9 +80,8 @@ type FilterObject<T> = T extends Array<infer R>
               : T[K];
       };
 
-export type isSameType<T, U> = (T extends U ? true : false) &
-    (U extends T ? true : false) &
-    true;
+export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any ? true : never) &
+    (((a: U) => any) extends (a: T) => any ? true : never);
 
 export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
 
@@ -97,6 +96,7 @@ export function AssertType<
     T extends
         | Keys<U>
         | Primitives
+        | Primitives[]
         | [Record<string, Primitives | Primitives[]>] = Keys<U>
 >(
     obj: unknown,
@@ -104,22 +104,50 @@ export function AssertType<
     msg?: string
 ): asserts obj is T extends Primitives
     ? MapPrimitive<[T]>
+    : T extends Array<infer R>
+    ? R extends Primitives
+        ? Assert<R>
+        : U extends undefined
+        ? Assert<T>
+        : U extends Array<infer R>
+        ? Array<FilterObject<R>>
+        : FilterObject<U>
     : U extends undefined
     ? Assert<T>
     : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
     if (typeof obj !== 'object') {
-        if (typeof obj !== typeShape) {
-            throw TypeError(
-                `${
-                    msg ? msg + ', ' : ''
-                }Input is expected to be of type "${typeShape}", got "${
-                    obj === null ? null : typeof obj
-                }"`
-            );
+        if (Array.isArray(typeShape)) {
+            const flag = typeShape.some((type) => {
+                if (type === 'object' && obj === null) {
+                    return false;
+                }
+                return obj != null && typeof obj === type;
+            });
+            if (!flag) {
+                throw new TypeError(
+                    `${
+                        msg ? msg + ', ' : ''
+                    }Input is expected to be of type "${typeShape.join(
+                        ' | '
+                    )}", got "${obj === null ? null : typeof obj}"`
+                );
+            } else {
+                return;
+            }
         } else {
-            return;
+            if (typeof obj !== typeShape) {
+                throw TypeError(
+                    `${
+                        msg ? msg + ', ' : ''
+                    }Input is expected to be of type "${typeShape}", got "${
+                        obj === null ? null : typeof obj
+                    }"`
+                );
+            } else {
+                return;
+            }
         }
     }
     if (Array.isArray(obj) !== Array.isArray(typeShape))
@@ -169,15 +197,24 @@ export function isType<
     T extends
         | Keys<U>
         | Primitives
+        | Primitives[]
         | [Record<string, Primitives | Primitives[]>] = Keys<U>
 >(
     obj: unknown,
     typeShape: T
 ): obj is T extends Primitives
     ? MapPrimitive<[T]>
+    : T extends Array<infer R>
+    ? R extends Primitives
+        ? Assert<R>
+        : U extends undefined
+        ? Assert<T>
+        : U extends Array<infer R>
+        ? Array<FilterObject<R>>
+        : FilterObject<U>
     : U extends undefined
     ? Assert<T>
-    : U extends [infer R]
+    : U extends Array<infer R>
     ? Array<FilterObject<R>>
     : FilterObject<U> {
     try {
