@@ -3,6 +3,7 @@ type Primitives =
     | 'number'
     | 'object'
     | 'string'
+    | 'array'
     | 'undefined'
     | 'function';
 
@@ -17,6 +18,8 @@ type Inner<P> = P extends 'string'
     ? number
     : P extends 'function'
     ? AnyFunction
+    : P extends 'array'
+    ? unknown[]
     : P extends 'boolean'
     ? boolean
     : P extends 'undefined'
@@ -64,6 +67,18 @@ export type PowerPartial<T> = {
     [U in keyof T]?: T[U] extends object ? PowerPartial<T[U]> : T[U];
 };
 
+export type PowerNonNullable<T> = T extends Array<infer U>
+    ? Array<
+          {
+              [K in keyof U]-?: U[K] extends Array<infer Q>
+                  ? PowerNonNullable<NonNullable<Q>[]>
+                  : PowerNonNullable<NonNullable<U[K]>>;
+          }
+      >
+    : {
+          [K in keyof T]-?: PowerNonNullable<NonNullable<T[K]>>;
+      };
+
 type FilterObject<T> = T extends Array<infer R>
     ? {
           [K in keyof R]: R[K] extends AnyFunction
@@ -80,7 +95,9 @@ type FilterObject<T> = T extends Array<infer R>
               : T[K];
       };
 
-export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any ? true : never) &
+export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any
+    ? true
+    : never) &
     (((a: U) => any) extends (a: T) => any ? true : never);
 
 export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
@@ -150,6 +167,9 @@ export function AssertType<
             }
         }
     }
+    if (Array.isArray(obj) && typeShape === 'array') {
+        return;
+    }
     if (Array.isArray(obj) !== Array.isArray(typeShape))
         throw new TypeError(
             'Passed in value is expected to be of type "Array"'
@@ -176,6 +196,9 @@ export function AssertType<
                     obj == null ||
                     typeof obj[key] !== shape[key]
                 ) {
+                    if (Array.isArray(obj[key]) && shape[key] === 'array') {
+                        continue;
+                    }
                     throw new TypeError(errMsg(key, shape, obj, msg));
                 }
             }

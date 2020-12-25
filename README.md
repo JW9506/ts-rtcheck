@@ -1,6 +1,10 @@
 ###
 
 A Typescript runtime checker
+```bash
+yarn add ts-rtcheck -D
+npm install ts-rtcheck -D
+```
 
 ```ts
 import assert from 'assert';
@@ -143,5 +147,105 @@ assert.throws(() => {
     });
     const T: isSameType<typeof unknown.age, string> = true;
     const TT: isSameType<typeof unknown, { name: string; age: string }> = true;
+})();
+
+(() => {
+    const unknown: unknown = ['foo', 123];
+    AssertType(unknown, 'array');
+    const T: isSameType<typeof unknown, unknown[]> = true;
+    forceCast<Array<string | number>>(unknown);
+    const TT: isSameType<typeof unknown, Array<string | number>> = true;
+})();
+
+(() => {
+    const unknown: unknown = {
+        name: 'bar',
+        notes: ['foo', 'baz', 'foe'],
+    };
+    AssertType(unknown, {
+        name: 'string',
+        notes: 'array',
+    });
+    const T: isSameType<typeof unknown, { name: string; notes: unknown[] }> = true;
+    forceCast<typeof unknown, { notes: string[] }>(unknown);
+    const TT: isSameType<typeof unknown, { name: string; notes: string[] }> = true;
+})();
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bar',
+            notes: ['foo', 'baz', 'foe'],
+        },
+    ];
+    AssertType(unknown, [
+        {
+            name: 'string',
+            notes: 'array',
+        },
+    ]);
+    const T: isSameType<typeof unknown, { name: string; notes: unknown[] }[]> = true;
+})();
+
+assert.throws(() => {
+    const unknown: unknown = {
+        name: 'bar',
+        notes: {},
+    };
+    AssertType(unknown, {
+        name: ['string', 'undefined'],
+        notes: 'array',
+    });
+    const T: isSameType<typeof unknown, { name: string | undefined; notes: unknown[] }> = true;
+    forceCast<PowerNonNullable<typeof unknown>>(unknown);
+    const TT: isSameType<typeof unknown, { name: string; notes: {}[] }> = true;
+});
+
+(() => {
+    const unknown: unknown = [
+        {
+            name: 'bart',
+            diary: [{ detail: { rain: { afternoon: true } } }],
+        },
+    ];
+    AssertType<
+        [
+            {
+                name: string;
+                diary: {
+                    detail: {
+                        page: number;
+                        rain: { morning: boolean; afternoon: boolean };
+                    };
+                }[];
+            }
+        ]
+    >(unknown, [
+        {
+            name: 'string',
+            diary: 'array',
+        },
+    ]);
+    const T: isSameType<
+        typeof unknown,
+        Array<{
+            name: string;
+            diary: Array<
+                | PowerPartial<{
+                      detail: {
+                          page: number;
+                          rain: { morning: boolean; afternoon: boolean };
+                      };
+                  }>
+                | undefined
+            >;
+        }>
+    > = true;
+    unknown[0].diary[99]?.detail?.rain?.afternoon; // afternoon is boolean | undefined;
+    assert(unknown[0].diary[0]?.detail?.rain?.afternoon === true);
+    assert.throws(() => {
+        forceCast<PowerNonNullable<typeof unknown>>(unknown);
+        unknown[999].diary[999].detail.rain.afternoon; // afternoon is boolean;
+    });
 })();
 ```
