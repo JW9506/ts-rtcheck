@@ -17,6 +17,9 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
+  "exclude": [
+    "./**/*.ignore.ts"
+  ],
   "include": [
     ".",
     "../src/**/*.ts"

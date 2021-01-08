@@ -183,11 +183,16 @@ export function AssertType<
         throw new TypeError(
             `Input is expected to be of type "array", got ${typeof obj}`
         );
-    const shape = (Array.isArray(typeShape)
-        ? typeShape[0]
-        : typeShape) as Record<string, Primitives | Primitives[]>;
+    let shape = (Array.isArray(typeShape) ? typeShape[0] : typeShape) as Record<
+        string,
+        Primitives | Primitives[]
+    >;
 
     const checkOneObj = (obj: any) => {
+        if (typeof shape === 'string') {
+            obj = { Input: obj };
+            shape = { Input: shape };
+        }
         for (const key in shape) {
             if (Array.isArray(shape[key])) {
                 const flag = (shape[key] as Primitives[]).some((type) => {
