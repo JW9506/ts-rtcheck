@@ -100,6 +100,12 @@ export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any
     : never) &
     (((a: U) => any) extends (a: T) => any ? true : never);
 
+export type UnionToIntersection<U> = (U extends any ? (_: U) => void : never) extends (
+    _: infer I
+) => void
+    ? I
+    : never;
+
 export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;
 
 function errMsg(key: any, shape: any, obj: any, msg?: string) {
