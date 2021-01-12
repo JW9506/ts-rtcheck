@@ -100,10 +100,16 @@ export type isSameType<T, U> = (((a: T) => any) extends (a: U) => any
     : never) &
     (((a: U) => any) extends (a: T) => any ? true : never);
 
-export type UnionToIntersection<U> = (U extends any ? (_: U) => void : never) extends (
-    _: infer I
-) => void
+export type UnionToIntersection<U> = (
+    U extends any ? (_: U) => void : never
+) extends (_: infer I) => void
     ? I
+    : never;
+
+export type isUnknownOrUndefined<T> = true extends isSameType<T, unknown>
+    ? true
+    : true extends isSameType<T, undefined>
+    ? true
     : never;
 
 export type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R;

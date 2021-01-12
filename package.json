@@ -1,6 +1,6 @@
 {
   "name": "ts-rtcheck",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "author": "'JW9506' <'cf.dota@gmail.com'>",
